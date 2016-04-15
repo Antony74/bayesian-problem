@@ -2,7 +2,7 @@
 poisson = function(x, lambda)
 {
 	# Only do it this way for very small values of x
-	return (  ( exp(-lambda) * (lambda ^ 2) ) / factorial(x)  ); 
+	return (  ( exp(-lambda) * (lambda ^ x) ) / factorial(x)  ); 
 };
 
 bayes = function(likelihoods, priors)
