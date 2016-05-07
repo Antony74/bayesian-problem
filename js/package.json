@@ -1,0 +1,24 @@
+{
+    "name": "bayesian-problem",
+    "description": "Let's port some R code I wrote earlier",
+    "author": {
+        "name": "Antony Bartlett",
+        "email": "akb@akb.me.uk"
+    },
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/Antony74/bayesian-problem"
+    },
+    "dependencies": {
+        "jshint": "2.9.2",
+        "true": "0.0.2",
+        "ndarray": "1.0.18",
+        "ndarray-ops": "1.2.2"
+    },
+    "license":  "MIT",
+    "scripts": {
+        "lint": "jshint . --exclude node_modules || node node_modules/true/index.js"
+    },
+    "version": "0.0.1",
+    "readme": "Let's port some R code I wrote earlier"
+}
