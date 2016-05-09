@@ -11,9 +11,7 @@
     },
     "dependencies": {
         "jshint": "2.9.2",
-        "true": "0.0.2",
-        "ndarray": "1.0.18",
-        "ndarray-ops": "1.2.2"
+        "true": "0.0.2"
     },
     "license":  "MIT",
     "scripts": {

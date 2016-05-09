@@ -1,24 +1,84 @@
 
-var ndarray = require('ndarray');
-var ops = require('ndarray-ops');
+function wrapUnary(fn)
+{
+	return function(a)
+	{
+		if (typeof(a) === 'number')
+		{
+			return fn(a);
+		}
+		else if (Array.isArray(a))
+		{
+			var arrOut = Array(a.length);
+			for (var n = 0; n < a.length; ++n)
+			{
+				arrOut[n] = fn(a[n]);
+			}
+			return arrOut;
+		}
+		else
+		{
+			throw 'Not supported';
+		}
+	};
+}
 
-function wrap(sFunctionName)
+function wrapBinary(fn)
 {
 	return function(a, b)
 	{
-		var retval = ndarray(Array(a.shape[0]));
-		ops[sFunctionName](retval, a, b);
-		return retval;
+		var arrOut, n;
+
+		if (typeof(a) === 'number' && typeof(b) === 'number')
+		{
+			return fn(a,b);
+		}
+		else if (typeof(a) === 'number' && Array.isArray(b))
+		{
+			arrOut = Array(b.length);
+			for (n = 0; n < b.length; ++n)
+			{
+				arrOut[n] = fn(a, b[n]);
+			}
+			return arrOut;
+		}
+		else if (Array.isArray(a) && typeof(b) === 'number')
+		{
+			arrOut = Array(a.length);
+			for (n = 0; n < a.length; ++n)
+			{
+				arrOut[n] = fn(a[n], b);
+			}
+			return arrOut;
+		}
+		else if (Array.isArray(a) && Array.isArray(b))
+		{
+			if (a.length !== b.length)
+			{
+				throw 'Array lengths differ';
+			}
+
+			arrOut = Array(a.length);
+			for (n = 0; n < a.length; ++n)
+			{
+				arrOut[n] = fn(a[n], b[n]);
+			}
+			return arrOut;
+		}
+		else
+		{
+			throw 'Not supported';
+		}
 	};
 }
 
 // Define various wrappers
-var divs = wrap('divs');
-var mul  = wrap('mul' );
-var muls = wrap('muls');
-var exp  = wrap('exp' );
-var neg  = wrap('neg' );
-var pows = wrap('pows');
+var div = wrapBinary( function(a,b) {return a/b;} );
+var mul = wrapBinary( function(a,b) {return a*b;} );
+var pow = wrapBinary( Math.pow );
+
+var neg  = wrapUnary( function(a) {return -a;} );
+var exp  = wrapUnary( Math.exp );
 
 function factorial(x)
 {
@@ -31,20 +91,32 @@ function factorial(x)
 	return f;
 }
 
+function sum(arr)
+{
+	var result = 0;
+
+	for (var n = 0; n < arr.length; ++n)
+	{
+		result += arr[n];
+	}
+
+	return result;
+}
+
 function possion(x, lambda)
 {
 	// Only do it this way for very small values of x
-	return divs(
+	return div(
 				mul( exp( neg(lambda)),
-				     pows(lambda, x)),
+				     pow(lambda, x)),
 				factorial(x));
 }
 
 function bayes(likelihoods, priors)
 {
 	var lp = mul(likelihoods, priors);
-	var evidence = ops.sum(lp);
-	return divs(lp, evidence);
+	var evidence = sum(lp);
+	return div(lp, evidence);
 }
 
 // Choose a sample of possible lambda
@@ -55,11 +127,10 @@ for (var n = 0.1; n <= 20; n += 0.1)
 }
 
 var N = lambda.length;
-lambda = ndarray(lambda);
 
 // Choose some priors
-var priors = ndarray(Array(N));
-ops.assigns(priors, 1/N);
+var priors = Array(N);
+priors.fill(1/N);
 
 // Calculate likelihoods
 var likelihoods = possion(2, lambda);
@@ -69,8 +140,8 @@ var posteriors = bayes(likelihoods, priors);
 
 function p(t)
 {
-	var possibities = exp(neg(muls(lambda, t)));
-	return ops.sum(mul(possibities, posteriors));
+	var possibities = exp(neg(mul(lambda, t)));
+	return sum(mul(possibities, posteriors));
 }
 
 console.log('p(1.72)=' + p(1.72));
